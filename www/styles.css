@@ -1,0 +1,108 @@
+.navbar-nav > li > a, .navbar-brand {
+            padding-top:4px !important; 
+            padding-bottom:0 !important;
+            height: 20px;
+         }
+                 
+.navbar {
+           min-height: 20px !important;
+         }
+
+.main-header {
+  min-height: 20px !important;
+}
+
+.control-label {
+           font-family: cambria;
+         }
+         
+.shiny-input-container {
+           font-family: cambria;
+           margin-top: -1.5em;
+         }
+
+.selectize-control {
+           margin-top: -0.5em;
+         }
+         
+         
+.dropdown-menu {
+           font-family: cambria;
+         }
+         
+.selectize-dropdown { 
+           line-height: 10px;
+         }
+         
+.selectize-dropdown-content {
+            max-height: 88px !important;
+         }
+
+#reset_id {
+            font-family: cambria;
+            color: #000000;
+            height: 40px;
+            margin-top: -0.5em;
+            logout-top: -1em;
+         }
+
+#fluidRow1 {
+  margin-top: -1em;
+}
+
+#constituency_group {
+           margin: 0 0 0 0;
+         }
+
+#ward_group {
+           margin: 0 0 0 0;
+         }
+         
+.shiny-options-group {
+           font-size: 12px;
+           margin-left: 0.5em;
+           margin-right: 0.5em;
+         }
+         
+.box-body {
+           margin: -1em -1em -1em -1em;
+         }  
+
+.card-body {
+   padding: 0 0 0 0;
+   margin: 0 0 0 0;  
+}
+
+.card {
+   padding: 0 0 0 0;
+   margin: 0 0 0 0;  
+}
+
+.card-header {
+ height: 25px;
+ padding-top: 0;
+}
+
+.cars-box {
+ padding: 0 0 0 0;
+ margin: 0 0 0 0;
+}
+
+#logout {
+  font-color:blue;
+}
+
+.tab-content {
+  padding: 0 0 0 0;
+  margin: 0 0 0 0;
+}
+
+.awesome-checkbox {
+  display: inline-block;
+  vertical-align:top;
+}
+
+.xy {
+  padding: 0 0 0 0;
+ margin: 0 0 0 0;
+}
