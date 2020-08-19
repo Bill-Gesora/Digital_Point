@@ -3,7 +3,7 @@ county_name_selector <- selectizeInput(
   inputId = "county_name_id",
   label = "County", 
   multiple = TRUE,
-  choices = unique(stats_data$county_name),
+  choices = unique(polling_data$county_name),
   selected = NULL,
   options = list(placeholder = 'County',
                  plugins = list('remove_button'))
@@ -38,8 +38,8 @@ ward_checkbox <- bs4Box(
   checkboxGroupInput(
     inputId = "ward_group",
     label = "",
-    choices = unique(stats_data$caw_name),
-    selected = unique(stats_data$caw_name)
+    choices = unique(polling_data$caw_name),
+    selected = unique(polling_data$caw_name)
   )
 )
   
@@ -51,10 +51,11 @@ constituency_checkbox <- bs4Box(
   checkboxGroupInput(
     inputId = "constituency_group",
     label = "",
-    choices = unique(stats_data$constituency),
-    selected = unique(stats_data$constituency)
+    choices = unique(polling_data$constituency),
+    selected = unique(polling_data$constituency)
       )
     )
+
 #navbar
 navbar = bs4DashNavbar(
   "We can include cient info here",
@@ -65,18 +66,24 @@ navbar = bs4DashNavbar(
   compact = FALSE,
   controlbarIcon = "th",
   leftUi = NULL,
-  rightUi = actionButton(inputId = "logout", 
+  rightUi = actionButton(inputId = "logout_action", 
                          label = "logout", 
                          icon = NULL, width = NULL)
 )
 
+#Absolute panel for leaflet map
+#absolutePanel()
+
 #Filters reset button
-my_reset_button <- actionBttn(
-  inputId = "reset_id",
-  label = "Clear",
-  style = "float", 
-  color = "primary"
+my_refresh_button <- actionButton(
+  inputId = "refresh",
+  label = "Refresh",
+  styleclass = "primary"
 )
+
+#Define colors for leaflet map
+pal <- colorFactor(c("red", "grey", "green"),
+                   domain = unique(polling_data$Status))
 
 
 #sidebar
@@ -92,10 +99,11 @@ sidebar = bs4DashSidebar(
   elevation = 4,
   opacity = 0.8,
   expand_on_hover = FALSE,
+  sidebar_collapsed = FALSE,
   
   #Adding user icon here
   bs4SidebarUserPanel(img = "https://image.flaticon.com/icons/svg/3021/3021989.svg", 
-                      text = "John Doe"),
+                      text = textOutput(outputId = "res_auth")),
   
   #creating the sidebar menu
   bs4SidebarMenu(
@@ -111,9 +119,27 @@ sidebar = bs4DashSidebar(
       startExpanded = FALSE
     ),
     bs4SidebarMenuItem(
-      text = "Sentiment Analysis",
-      tabName = "sentiment",
-      icon = "volume-up",
+      text = "Project Tracker",
+      tabName = "tracker",
+      icon = "bar-chart",
+      startExpanded = FALSE
+    ),
+    bs4SidebarMenuItem(
+      text = "Twitter Analysis",
+      tabName = "twitter",
+      icon = "twitter",
+      startExpanded = FALSE
+    ),
+    bs4SidebarMenuItem(
+      text = "Whatsapp Analysis",
+      tabName = "whatsapp",
+      icon = "whatsapp",
+      startExpanded = FALSE
+    ),
+    bs4SidebarMenuItem(
+      text = "Facebook Analysis",
+      tabName = "facebook",
+      icon = "facebook",
       startExpanded = FALSE
     ),
     bs4SidebarMenuItem(
@@ -121,18 +147,16 @@ sidebar = bs4DashSidebar(
       tabName = "surveys",
       icon = "tasks",
       startExpanded = FALSE
+    ),
+    bs4SidebarMenuItem(
+      text = "Data Uploads",
+      tabName = "data_uploads",
+      icon = "upload",
+      startExpanded = FALSE
     )
   )
 )
 
-#controlbar
-controlbar = bs4DashControlbar(
-  inputId = NULL,
-  disable = FALSE,
-  skin = "dark",
-  title = NULL,
-  width = 250
-)
 
 #footer
 footer = bs4DashFooter()
@@ -146,7 +170,7 @@ bs4TabItems(
      column(4, county_name_selector),
      column(4, const_name_selector),
      column(3, caw_name_selector ),
-     column(1, my_reset_button)
+     column(1, my_refresh_button)
    ),
    fluidRow(id = "fluidRow1",
      column(3,
@@ -155,12 +179,12 @@ bs4TabItems(
             ),
      column(9, 
             bs4Box(
-              absolutePanel( top = 27,right = 2,
+              absolutePanel( top = 25,right = 2, draggable = TRUE,
                 awesomeRadio(
                   inputId = "map_radio",
                   label = NULL,
                   choices = c("National View","County View", "Constituency View", "Ward View"),
-                  selected = "Constituency View",
+                  selected = "National View",
                   inline = TRUE,
                   checkbox = TRUE
                 )
@@ -168,7 +192,16 @@ bs4TabItems(
               height = "400px",
               width = "600px",
               title = NULL,
-              plotlyOutput(outputId = "my_map")
+              leafletOutput(outputId = "my_map"),
+              absolutePanel(id = "leaflet_filters_pane", top = 40,right = 23, draggable = TRUE,
+                            width = '150px',
+                            awesomeCheckboxGroup(
+                              inputId = "leaflet_filters",
+                              label = NULL, 
+                              choices = unique(polling_data$Status),
+                              selected = unique(polling_data$Status)
+                            )
+              )
             ),
             fluidRow(
               bs4InfoBoxOutput("no_of_wards"),
@@ -177,9 +210,12 @@ bs4TabItems(
             )
           )
    )
+ ),bs4TabItem(
+   tabName = "tracker",
+   trackerUI('tracker_table')
  ),
    bs4TabItem(
-     tabName = "sentiment", 
+     tabName = "twitter", 
      fluidRow(
         column(4,
                bs4Box(
@@ -199,10 +235,10 @@ bs4TabItems(
                                title = NULL) +
                         theme_minimal() +
                         theme(axis.text.x = element_blank(),
-                              legend.position = "none"))
-                        
-               )
-              ),
+                              legend.position = "none")
+                        )
+                    )
+               ),
        column(8,
             column(12,
               bs4Box(
@@ -234,6 +270,48 @@ bs4TabItems(
 
    ),
  bs4TabItem(
-   tabName = "surveys", "Survey Analysis"
+   tabName = "whatsapp",
+   dataUploadUI('upload_module')
+ ),
+ bs4TabItem(
+   tabName = "facebook"
+ ),
+ bs4TabItem(
+   tabName = "surveys",
+   fluidRow(
+            column(3,employment_selector),
+            column(3,religion_selector),
+            column(3,age_selector),
+            column(2,gender_selection,)
+           ),
+   fluidRow(
+       column(3,
+              constituency_checkbox_2,
+              ward_checkbox_2,
+              uiOutput("survey_responses")
+              ),
+       column(9,
+              grillade(
+                      plotlyOutput("education_chart_a", height = "255px"),
+                      plotlyOutput("president_chart_a", height = "255px"),
+                      plotlyOutput("party_chart_a", height = "255px")
+                      
+                      ),
+              grillade(
+                plotlyOutput("marital_chart_a", height = "255px"),
+                plotlyOutput("pressing_chart_a", height = "255px")
+              )
+              )
+            ),
+  fluidRow(
+          )
+      ),
+ bs4TabItem(
+   tabName = "data_uploads",
+    fluidRow(
+      
+    ),
+    fluidRow()
+     )
  )
-))
+)
