@@ -1,22 +1,10 @@
-library(dplyr)
-library(snakecase)
-
-stats_data_raw <- dbGetQuery(con,
+#Dashboard overview section----
+polling_data <- dbGetQuery(con,
                          "SELECT *
-                          FROM Digital_Point.dbo.Stats_Data")
-
-#Converting column names to snakecase
-colnames(stats_data_raw) <- to_snake_case(colnames(stats_data_raw))
-
-#Grouping the data
-stats_data <- stats_data_raw %>% 
-                group_by(county_name, constituency, caw_name) %>%
-                summarise(total_voters = sum(total_voters),
-                          polling_stations = n(),
-                          voters_with_biometrics = sum(voters_with_biometrics),
-                          voters_without_biometrics = sum(voters_without_biometrics)
-                          ) %>% 
-                ungroup()
+                          FROM Polling_Data_Recent")
+polling_data_all <- dbGetQuery(con,
+                                "SELECT *
+                                 FROM Polling_Data")
 
 
 #######################
@@ -26,6 +14,56 @@ library("twitteR")
 library("rtweet")
 library("stringr")
 library("tidytext")
+library("rgdal")
+
+countiesshapefile <- readOGR("Map_Data/counties.shp")
+countiesshapefile@data <- countiesshapefile@data %>% left_join(polling_data %>% 
+                                  group_by(county_name,Status) %>% 
+                                  summarize(Count = n(),
+                                            max_longitude = max(longitude),
+                                            max_latitude = max(latitude),
+                                            min_longitude = min(longitude),
+                                            min_latitude = min(latitude)) %>% 
+                                  arrange(desc(Count)) %>% 
+                                  top_n(1) %>% 
+                                  select(county_name, Status, max_longitude, max_latitude, min_longitude, min_latitude),
+                                 by = c("COUNTY_NAM" = "county_name")
+                                 )
+
+
+constituencyshapefile <- readOGR("Map_Data/constituencies.shp")
+constituencyshapefile@data <- constituencyshapefile@data %>% left_join(polling_data %>% 
+                                                                 group_by(constituency,Status) %>% 
+                                                                 summarize(Count = n(),
+                                                                           max_longitude = max(longitude),
+                                                                           max_latitude = max(latitude),
+                                                                           min_longitude = min(longitude),
+                                                                           min_latitude = min(latitude)) %>% 
+                                                                 arrange(desc(Count)) %>% 
+                                                                 top_n(1) %>% 
+                                                                 select(constituency, Status, max_longitude, max_latitude, min_longitude, min_latitude),
+                                                               by = c("CONSTITUEN" = "constituency")
+                                                         )
+
+wardshapefile <- readOGR("Map_Data/Kenya wards.shp")
+wardshapefile@data <- wardshapefile@data %>% left_join(polling_data %>% 
+                                                       group_by(caw_name,Status) %>% 
+                                                                summarize(Count = n(),
+                                                                          max_longitude = max(longitude),
+                                                                          max_latitude = max(latitude),
+                                                                          min_longitude = min(longitude),
+                                                                          min_latitude = min(latitude)) %>% 
+                                                                arrange(desc(Count)) %>% 
+                                                                top_n(1) %>% 
+                                                                select(caw_name, Status, max_longitude, max_latitude, min_longitude, min_latitude),
+                                                                by = c("IEBC_WARDS" = "caw_name")
+                                                          )
+countycode <- countiesshapefile$COUNTY_COD
+countycode <- as.numeric(countycode)
+constituencycode <- constituencyshapefile$CONST_CODE #COUNTYCODE THAT'S IN
+constituencycode <- as.numeric(constituencycode) 
+
+
 
 #Connecting to my twitter account
 appname <- "Sentiment_Analysis_Bill"
@@ -56,7 +94,7 @@ twitter_token <- create_token(
 # )
 # 
 
-#saving the file
+#saving the file----
 # save(busia_sample_politicians, file = "busia_sample_politicians.Rdata")
 load(file = "busia_sample_politicians.Rdata")
 data("stop_words")
@@ -133,7 +171,7 @@ busia_politicians_hashtags$hashtags
 #       arrange(desc(Freq)) %>% head(10) %>% 
 #        transmute(Tweet = Var1)
 
-#Sentiment_Analysis
+#Sentiment_Analysis----
 #Cleaning up the data
 text_clean <- busia_sample_politicians %>% 
   mutate(text = gsub("http.*","",text)) %>% 

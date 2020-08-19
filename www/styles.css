@@ -89,7 +89,7 @@
 }
 
 #logout {
-  font-color:blue;
+  color:blue;
 }
 
 .tab-content {
@@ -106,3 +106,97 @@
   padding: 0 0 0 0;
  margin: 0 0 0 0;
 }
+
+.form-group {
+  font-size:90%;
+  padding: 0 0 0 0;
+ 
+}
+
+#constituency_group_survey {
+           margin: 0 0 0 0;
+         }
+         
+#ward_group_survey {
+           margin: 0 0 0 0;
+         }
+
+#constituency_group_survey .shiny-options-group {
+ font-size: 12px;
+           margin-left: 0.5em;
+           margin-right: 0.5em;
+}
+
+#ward_group_survey .shiny-options-group {
+  font-size: 12px;
+           margin-left: 0.5em;
+           margin-right: 0.5em;
+}
+
+#religion_selector {
+  font-size: 80%;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+#age_selector {
+  font-size: 80%;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+#education_selector {
+  font-size: 80%;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+#education_selector {
+  padding:0;
+  margin:0;
+  margin-right: 0.5em;
+}
+
+#gender_selector{
+  font-size: 80%;
+}
+
+#leaflet_filters_pane {
+  /* Appearance */
+  background-color: white;
+  padding: 20px 20px 20px 20px;
+  cursor: move;
+  /* Fade out while not hovering */
+  opacity: 0.65;
+  zoom: 0.9;
+  transition: opacity 500ms 1s;
+}
+
+ .control-label[for="auth-user_pwd"] {
+  margin-top: .7em;
+}
+
+.panel-primary {
+    border-color: blue;
+    border-radius: 25px;
+}
+
+.panel-body {
+  background-color: white;
+  padding: 15px;
+}
+
+.panel {
+    margin-bottom: 20px;
+    background-color: #fff;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    box-shadow: 0 1px 1px rgba(0,0,0,.05);
+}
+
+
+
+
+
+
