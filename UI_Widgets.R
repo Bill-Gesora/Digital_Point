@@ -1,3 +1,4 @@
+
 #county_name_selector
 county_name_selector <- selectizeInput(
   inputId = "county_name_id",
@@ -42,8 +43,8 @@ ward_checkbox <- bs4Box(
     selected = unique(polling_data$caw_name)
   )
 )
-  
-  
+
+
 constituency_checkbox <- bs4Box(
   height = "240px",
   width = "300px",
@@ -53,8 +54,8 @@ constituency_checkbox <- bs4Box(
     label = "",
     choices = unique(polling_data$constituency),
     selected = unique(polling_data$constituency)
-      )
-    )
+  )
+)
 
 #navbar
 navbar = bs4DashNavbar(
@@ -113,7 +114,7 @@ sidebar = bs4DashSidebar(
     child_indent = TRUE,
     # bs4SidebarHeader(NULL),
     bs4SidebarMenuItem(
-      text = "Dashboard",
+      text = "My Dashboard",
       tabName = "dashboard",
       icon = "chart-line",
       startExpanded = FALSE
@@ -147,12 +148,6 @@ sidebar = bs4DashSidebar(
       tabName = "surveys",
       icon = "tasks",
       startExpanded = FALSE
-    ),
-    bs4SidebarMenuItem(
-      text = "Data Uploads",
-      tabName = "data_uploads",
-      icon = "upload",
-      startExpanded = FALSE
     )
   )
 )
@@ -163,155 +158,146 @@ footer = bs4DashFooter()
 
 #body
 body = bs4DashBody(
-bs4TabItems(
- bs4TabItem (
-   tabName = "dashboard", 
-   fluidRow(
-     column(4, county_name_selector),
-     column(4, const_name_selector),
-     column(3, caw_name_selector ),
-     column(1, my_refresh_button)
-   ),
-   fluidRow(id = "fluidRow1",
-     column(3,
-            constituency_checkbox,
-            ward_checkbox
-            ),
-     column(9, 
-            bs4Box(
-              absolutePanel( top = 25,right = 2, draggable = TRUE,
-                awesomeRadio(
-                  inputId = "map_radio",
-                  label = NULL,
-                  choices = c("National View","County View", "Constituency View", "Ward View"),
-                  selected = "National View",
-                  inline = TRUE,
-                  checkbox = TRUE
-                )
-              ),
-              height = "400px",
-              width = "600px",
-              title = NULL,
-              leafletOutput(outputId = "my_map"),
-              absolutePanel(id = "leaflet_filters_pane", top = 40,right = 23, draggable = TRUE,
-                            width = '150px',
-                            awesomeCheckboxGroup(
-                              inputId = "leaflet_filters",
-                              label = NULL, 
-                              choices = unique(polling_data$Status),
-                              selected = unique(polling_data$Status)
-                            )
-              )
-            ),
-            fluidRow(
-              bs4InfoBoxOutput("no_of_wards"),
-              bs4InfoBoxOutput("reg_voters" ),
-              bs4InfoBoxOutput("poll_stations")
-            )
-          )
-   )
- ),bs4TabItem(
-   tabName = "tracker",
-   trackerUI('tracker_table')
- ),
-   bs4TabItem(
-     tabName = "twitter", 
-     fluidRow(
+  bs4TabItems(
+    bs4TabItem (
+      tabName = "dashboard", 
+      fluidRow(
+        column(4, county_name_selector),
+        column(4, const_name_selector),
+        column(3, caw_name_selector ),
+        column(1, my_refresh_button)
+      ),
+      fluidRow(id = "fluidRow1",
+               column(3,
+                      constituency_checkbox,
+                      ward_checkbox
+               ),
+               column(9, 
+                      bs4Box(
+                        absolutePanel( top = 25,right = 2, draggable = TRUE,
+                                       awesomeRadio(
+                                         inputId = "map_radio",
+                                         label = NULL,
+                                         choices = c("County View","Constituency View", "Ward View", "Poll_Station View"),
+                                         selected = "County View",
+                                         inline = TRUE,
+                                         checkbox = TRUE
+                                       )
+                        ),
+                        height = "400px",
+                        width = "600px",
+                        title = NULL,
+                        leafletOutput(outputId = "my_map"),
+                        absolutePanel(id = "leaflet_filters_pane", top = 40,right = 23, draggable = TRUE,
+                                      width = '150px',
+                                      awesomeCheckboxGroup(
+                                        inputId = "leaflet_filters",
+                                        label = NULL, 
+                                        choices = unique(polling_data$Status),
+                                        selected = unique(polling_data$Status)
+                                      )
+                        )
+                      ),
+                      fluidRow(
+                        bs4InfoBoxOutput("no_of_wards"),
+                        bs4InfoBoxOutput("reg_voters" ),
+                        bs4InfoBoxOutput("poll_stations")
+                      )
+               )
+      )
+    ),bs4TabItem(
+      tabName = "tracker",
+      trackerUI('tracker_module')
+    ),
+    bs4TabItem(
+      tabName = "twitter", 
+      fluidRow(
         column(4,
                bs4Box(
                  height = "540px",
                  width = "600px",
                  title = "Trending topics" ,
                  ggplotly(text_clean %>%
-                          count(word, sort = TRUE) %>%
-                          top_n(10) %>%
-                          mutate(word = reorder(word, n)) %>%
-                          ggplot(aes(x = word, y = n)) +
-                          geom_col(fill = "blue") +
-                          xlab(NULL) +
-                          coord_flip() +
-                          labs(y = NULL,
-                               x = NULL,
-                               title = NULL) +
-                        theme_minimal() +
-                        theme(axis.text.x = element_blank(),
-                              legend.position = "none")
-                        )
-                    )
-               ),
-       column(8,
-            column(12,
-              bs4Box(
-                height = "260px",
-                width = "600px",
-                title = "Politicians popularity" ,
-                ggplotly(height = 220,
-                         ggplot(as.data.frame(busia_politicians %>%
-                                                group_by(politician) %>% 
-                                                summarise(Mentions = n())),
-                                aes(x = politician, y = Mentions)
-                         ) + geom_bar(stat = "identity",fill="steelblue") +
-                           theme(axis.title = element_blank(),
-                                 axis.text.y = element_blank(),
-                                 axis.ticks.y = element_blank())
+                            count(word, sort = TRUE) %>%
+                            top_n(10) %>%
+                            mutate(word = reorder(word, n)) %>%
+                            ggplot(aes(x = word, y = n)) +
+                            geom_col(fill = "blue") +
+                            xlab(NULL) +
+                            coord_flip() +
+                            labs(y = NULL,
+                                 x = NULL,
+                                 title = NULL) +
+                            theme_minimal() +
+                            theme(axis.text.x = element_blank(),
+                                  legend.position = "none")
+                 )
+               )
+        ),
+        column(8,
+               column(12,
+                      bs4Box(
+                        height = "260px",
+                        width = "600px",
+                        title = "Politicians popularity" ,
+                        ggplotly(height = 220,
+                                 ggplot(as.data.frame(busia_politicians %>%
+                                                        group_by(politician) %>% 
+                                                        summarise(Mentions = n())),
+                                        aes(x = politician, y = Mentions)
+                                 ) + geom_bar(stat = "identity",fill="steelblue") +
+                                   theme(axis.title = element_blank(),
+                                         axis.text.y = element_blank(),
+                                         axis.ticks.y = element_blank())
                         )
                       )
-              ),
-       column(12,
-              bs4Box(
-                height = "260px",
-                width = "600px",
-                title = "Tweeters' sentiments" ,
-                ggplotly(height = 220,sentiments_tweet)
-              )
-            )
-       )
-     )
-
-   ),
- bs4TabItem(
-   tabName = "whatsapp",
-   dataUploadUI('upload_module')
- ),
- bs4TabItem(
-   tabName = "facebook"
- ),
- bs4TabItem(
-   tabName = "surveys",
-   fluidRow(
-            column(3,employment_selector),
-            column(3,religion_selector),
-            column(3,age_selector),
-            column(2,gender_selection,)
-           ),
-   fluidRow(
-       column(3,
-              constituency_checkbox_2,
-              ward_checkbox_2,
-              uiOutput("survey_responses")
-              ),
-       column(9,
-              grillade(
-                      plotlyOutput("education_chart_a", height = "255px"),
-                      plotlyOutput("president_chart_a", height = "255px"),
-                      plotlyOutput("party_chart_a", height = "255px")
-                      
-                      ),
-              grillade(
-                plotlyOutput("marital_chart_a", height = "255px"),
-                plotlyOutput("pressing_chart_a", height = "255px")
-              )
-              )
-            ),
-  fluidRow(
-          )
-      ),
- bs4TabItem(
-   tabName = "data_uploads",
-    fluidRow(
+               ),
+               column(12,
+                      bs4Box(
+                        height = "260px",
+                        width = "600px",
+                        title = "Tweeters' sentiments" ,
+                        ggplotly(height = 220,sentiments_tweet)
+                      )
+               )
+        )
+      )
       
     ),
-    fluidRow()
-     )
- )
+    bs4TabItem(
+      tabName = "whatsapp",
+      dataUploadUI('upload_module')
+    ),
+    bs4TabItem(
+      tabName = "facebook"
+    ),
+    bs4TabItem(
+      tabName = "surveys",
+      fluidRow(
+        column(3,employment_selector),
+        column(3,religion_selector),
+        column(3,age_selector),
+        column(2,gender_selection,)
+      ),
+      fluidRow(
+        column(3,
+               constituency_checkbox_2,
+               ward_checkbox_2,
+               uiOutput("survey_responses")
+        ),
+        column(9,
+               grillade(
+                 plotlyOutput("education_chart_a", height = "255px"),
+                 plotlyOutput("president_chart_a", height = "255px"),
+                 plotlyOutput("party_chart_a", height = "255px")
+                 
+               ),
+               grillade(
+                 plotlyOutput("marital_chart_a", height = "255px"),
+                 plotlyOutput("pressing_chart_a", height = "255px")
+               )
+        )
+      )
+    )
+  )
 )

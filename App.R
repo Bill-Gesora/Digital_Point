@@ -53,40 +53,12 @@ credentials <- data.frame(
   stringsAsFactors = FALSE
 )
 
-# Importing other css files
+# Importing other R files
 source("Data_Manipulation.R")
 source("SurveyAnalysis.R")
 source("Modules.R")
 source("UI_Widgets.R")
 
-
-
-# Changing color based on clicks
-# javascript <- "
-# function(el, x){
-#   el.on('plotly_click', function(data) {
-#     var colors = [];
-#     // check if color is a string or array
-#     if(typeof data.points[0].data.marker.color == 'string'){
-#       for (var i = 0; i < data.points[0].data.marker.color.length; i++) {
-#         colors.push(data.points[0].data.marker.color);
-#       }
-#     } else {
-#       colors = data.points[0].data.marker.color;
-#     }
-#     // some debugging
-#     //console.log(data.points[0].data.marker.color)
-#     //console.log(colors)
-#
-#     // set color of selected point
-#     colors[data.points[0].pointNumber] = '#FF00FF';
-#     Plotly.restyle(el,
-#       {'marker':{color: colors}},
-#       [data.points[0].curveNumber]
-#     );
-#   });
-# }
-# "
 # create a custom function
 is.not.null <- function(x) !is.null(x)
 `%notin%` <- Negate(`%in%`)
@@ -121,7 +93,7 @@ ui <- bs4DashPage(
     background  = "linear-gradient(rgba(0, 0, 255, 0.5),
                        rgba(255, 255, 0, 0.5)),
                        url('data:image/jpeg;base64,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');"
-   ),
+  ),
   enable_preloader = FALSE,
   loading_duration = 5,
   navbar = navbar,
@@ -131,8 +103,8 @@ ui <- bs4DashPage(
   title = "test",
   body = body
 )
-
 server <- function(input, output, session) {
+  source("ServerSide.R", local = TRUE)
   
   auth <- callModule(
     module = auth_server,
@@ -144,7 +116,75 @@ server <- function(input, output, session) {
     auth$user_info[1,1]
   })
   
+  user_auth <- reactive(auth$user)
   
+  #Defining the polling data specifics per the logged in user
+  polling_data_map <- reactive({
+    mapping_data <- dbSendQuery(con,"SELECT *
+                                     FROM polling_data_recent
+                                     WHERE [User] = ?")
+    dbBind(mapping_data,as.character(list(auth$user)))
+    dbFetch(mapping_data)
+  })
+  
+
+  polling_data_all_map <- reactive({
+    mapping_data_all <- dbSendQuery(con,"SELECT *
+                                     FROM polling_data
+                                     WHERE [User] = ?")
+    dbBind(mapping_data_all,as.character(list(auth$user)))
+    dbFetch(mapping_data_all)
+  })
+  
+  reactive({
+    countiesshapefile@data <- countiesshapefile@data %>% left_join(polling_data_map() %>% 
+                                                                     group_by(county_name,Status) %>% 
+                                                                     summarize(Count = n(),
+                                                                               max_longitude = max(longitude),
+                                                                               max_latitude = max(latitude),
+                                                                               min_longitude = min(longitude),
+                                                                               min_latitude = min(latitude)) %>% 
+                                                                     arrange(desc(Count)) %>% 
+                                                                     top_n(1) %>% 
+                                                                     select(county_name, Status, max_longitude, max_latitude, min_longitude, min_latitude),
+                                                                   by = c("COUNTY_NAM" = "county_name")
+    )
+    
+    
+  })
+  
+  reactive({
+    constituencyshapefile@data <- constituencyshapefile@data %>% left_join(polling_data_map() %>% 
+                                                                             group_by(constituency,Status) %>% 
+                                                                             summarize(Count = n(),
+                                                                                       max_longitude = max(longitude),
+                                                                                       max_latitude = max(latitude),
+                                                                                       min_longitude = min(longitude),
+                                                                                       min_latitude = min(latitude)) %>% 
+                                                                             arrange(desc(Count)) %>% 
+                                                                             top_n(1) %>% 
+                                                                             select(constituency, Status, max_longitude, max_latitude, min_longitude, min_latitude),
+                                                                           by = c("CONSTITUEN" = "constituency")
+    )
+    
+  })
+  
+  reactive({
+    wardshapefile@data <- wardshapefile@data %>% left_join(polling_data_map() %>% 
+                                                             group_by(caw_name,Status) %>% 
+                                                             summarize(Count = n(),
+                                                                       max_longitude = max(longitude),
+                                                                       max_latitude = max(latitude),
+                                                                       min_longitude = min(longitude),
+                                                                       min_latitude = min(latitude)) %>% 
+                                                             arrange(desc(Count)) %>% 
+                                                             top_n(1) %>% 
+                                                             select(caw_name, Status, max_longitude, max_latitude, min_longitude, min_latitude),
+                                                           by = c("IEBC_WARDS" = "caw_name")
+    )
+    
+  })
+
   observeEvent(input$refresh,{
     progressSweetAlert(
       session = session
@@ -152,14 +192,7 @@ server <- function(input, output, session) {
       title = "Refresh in progress...",
       display_pct = F, value = 100
     )
-
-    polling_data <<- dbGetQuery(con,
-                                "SELECT *
-                                 FROM Polling_Data_Recent")
-    polling_data_all <<- dbGetQuery(con,
-                                    "SELECT *
-                                 FROM Polling_Data")
-    
+ 
     session$reload()
     closeSweetAlert(session = session)
     sendSweetAlert(
@@ -169,240 +202,288 @@ server <- function(input, output, session) {
     )
   })
   
-  output$user_name <- renderPrint(
-      reactiveValuesToList(res_auth$user)
-  )
   
-  
- observeEvent(input$login,{
-  polling_data <- dbSendQuery(con,
-                              "SELECT *
-                          FROM Polling_Data_Recent
-                          WHERE [User] = ?")
-  dbBind(polling_data, input$auth-user_id)
-  dbFetch(polling_data)
-  
-  polling_data_all <- dbSendQuery(con,
-                                  "SELECT *
-                                 FROM Polling_Data
-                                 WHERE [User] = ?")
-  dbBind(polling_data_all, input$auth-user_id)
-  dbFetch(polling_data_all)
-  
- })
-  
-  polling_data_filtered <- reactive({
+    polling_data_filtered <- reactive({
     if(is.null(input$county_name_id) & is.null(input$const_name_id) &
        is.null(input$caw_name_id)){
-      polling_data %>% 
+       polling_data_map() %>% 
         dplyr::filter(constituency %in% input$constituency_group &
-                        caw_name %in% input$ward_group & 
-                        Status %in% input$leaflet_filters)
+                        caw_name %in% input$ward_group)# & 
+                       # Status %in% input$leaflet_filters)
     } else {
-      polling_data %>% 
+      polling_data_map() %>% 
         dplyr::filter(county_name %in% input$county_name_id &
                         constituency %in% input$constituency_group &
-                        caw_name %in% input$ward_group &
-                        Status %in% input$leaflet_filters) 
+                        caw_name %in% input$ward_group)# &
+                        #Status %in% input$leaflet_filters) 
     }
   })
-
   
-  source("ServerSide.R", local = TRUE)
-  #source("Modules.R", local = TRUE)
-  
-  trackerServer('tracker_table')
-  
+  callModule(trackerServer,"tracker_module",user_auth, polling_data_map, polling_data_all_map)
   dataUploadServer('upload_module')
   
+
   #Leaflet color pallete
   pal <- colorFactor(palette = c("red", "grey", "green"),
                      levels = c("Lost", "Unsure", "Won"))
-
+  
+  
   output$my_map <- renderLeaflet ({
-    if (input$map_radio == "Constituency View") {
-      leaflet(polling_data_filtered(),
-              options = leafletOptions()) %>% 
-        addProviderTiles("CartoDB.Positron",
-                         options = providerTileOptions()) %>%
-        flyToBounds(lng1 = 45.057142,lat1 = -4.336573,lng2 =32.593274, lat2 = 4.29700) %>% 
-        addPolygons(data=wardshapefile, weight = 2,
-                     color = ~pal(Status),
-                     stroke = TRUE, smoothFactor = 0.5,
-                     fillOpacity = 0.5,
-                     opacity = 0.1,
-                     label = ~htmlEscape(IEBC_WARDS))
+    countiesshapefile@data <- countiesshapefile@data %>% left_join(polling_data_map() %>% 
+                                                                     group_by(county_name,Status) %>% 
+                                                                     summarize(Count = n(),
+                                                                               max_longitude = max(longitude),
+                                                                               max_latitude = max(latitude),
+                                                                               min_longitude = min(longitude),
+                                                                               min_latitude = min(latitude)) %>%
+                                                                     arrange(desc(Count)) %>%
+                                                                     select(county_name, Status, max_longitude, max_latitude, min_longitude, min_latitude),
+                                                                   by = c("COUNTY_NAM" = "county_name")
+    )
+    
+    leaflet(polling_data_map(),
+            options = leafletOptions()) %>% 
+      addProviderTiles("CartoDB.Positron",
+                       options = providerTileOptions()) %>%
+      flyToBounds(lng1 = 45.057142,lat1 = -4.336573,lng2 =32.593274, lat2 = 4.29700) %>% 
+      addPolygons(data=countiesshapefile, weight = 2, color = ~pal(Status), 
+                  stroke = TRUE, smoothFactor = 0.5,
+                  fillOpacity = 0.5,
+                  opacity = 0.1,
+                  label = ~htmlEscape(COUNTY_NAM))
+  })
+  
+  observe({
+    if (input$map_radio == "Ward View") {
       
-    } else if (input$map_radio == "County View") {
-      leaflet(polling_data_filtered(),
-              options = leafletOptions()) %>% 
+      wards_filtered <- polling_data_filtered() %>%
+                        group_by(caw_name,Status) %>%
+                        summarize(Count = n(),
+                                  max_longitude = max(longitude),
+                                  max_latitude = max(latitude),
+                                  min_longitude = min(longitude),
+                                  min_latitude = min(latitude)) %>%
+                        arrange(desc(Count)) %>%
+                        select(caw_name, Status, max_longitude, max_latitude, min_longitude, min_latitude)
+      wardshapefile@data <- wardshapefile@data %>% left_join(wards_filtered,
+                                                        by = c("IEBC_WARDS" = "caw_name")
+      )
+      
+      leafletProxy('my_map',data = wards_filtered) %>%
         addProviderTiles("CartoDB.Positron",
                          options = providerTileOptions()) %>%
-        flyToBounds(lng1 = 45.057142,lat1 = -4.336573,lng2 =32.593274, lat2 = 4.29700) %>% 
-        addPolygons(data=constituencyshapefile, weight = 2, color = ~pal(Status),
+        clearShapes() %>%
+        flyToBounds(lng1 = wards_filtered$max_longitude,
+                    lat1 = wards_filtered$min_latitude,
+                    lng2 = wards_filtered$min_longitude,
+                    lat2 = wards_filtered$max_latitude) %>%
+        addPolygons(data=wardshapefile, weight = 2, 
+                    fillColor = ~pal(Status), color = "black",
+                    stroke = TRUE, smoothFactor = 0.5,
+                    fillOpacity = 0.5,
+                    opacity = 0.1,
+                    label = ~htmlEscape(IEBC_WARDS))
+      
+      
+    } else if (input$map_radio == "Constituency View") {
+      constituency_filtered <- polling_data_filtered() %>%
+        group_by(constituency,Status) %>%
+        summarize(Count = n(),
+                  max_longitude = max(longitude),
+                  max_latitude = max(latitude),
+                  min_longitude = min(longitude),
+                  min_latitude = min(latitude)) %>%
+        arrange(desc(Count)) %>%
+        select(constituency, Status, max_longitude, max_latitude, min_longitude, min_latitude)
+      constituencyshapefile@data <- constituencyshapefile@data %>% left_join(constituency_filtered,
+                                                                     by = c("CONSTITUEN" = "constituency")
+      )
+      
+      leafletProxy('my_map',data = constituency_filtered) %>%
+        addProviderTiles("CartoDB.Positron",
+                         options = providerTileOptions()) %>%
+        clearShapes() %>%
+        flyToBounds(lng1 = constituency_filtered$max_longitude,
+                    lat1 = constituency_filtered$min_latitude,
+                    lng2 = constituency_filtered$min_longitude,
+                    lat2 = constituency_filtered$max_latitude) %>%
+        addPolygons(data=constituencyshapefile, weight = 2, 
+                    fillColor = ~pal(Status), color = "black",
                     stroke = TRUE, smoothFactor = 0.5,
                     fillOpacity = 0.5,
                     opacity = 0.1,
                     label = ~htmlEscape(CONSTITUEN))
 
-    } else if (input$map_radio == "Ward View") {
-      leaflet(polling_data_filtered(),
-              options = leafletOptions()) %>% 
+    } else if (input$map_radio == "Poll_Station View") {
+      leafletProxy('my_map',data = polling_data_filtered()) %>% 
         addProviderTiles("CartoDB.Positron",
                          options = providerTileOptions()) %>%
-        flyToBounds(lng1 = 45.057142,lat1 = -4.336573,lng2 =32.593274, lat2 = 4.29700) %>% 
+        clearShapes() %>%
+        flyToBounds(lng1 = polling_data_filtered()$max_longitude,
+                    lat1 = polling_data_filtered()$min_latitude,
+                    lng2 = polling_data_filtered()$min_longitude,
+                    lat2 = polling_data_filtered()$max_latitude) %>% 
         addCircles(
           weight = 20,
-          color = ~pal(Status),
+          fillColor = ~pal(Status), color = "black",
           stroke = FALSE, fillOpacity = 0.5,
           lng = ~longitude, lat = ~latitude,
           label = ~as.character(paste0(polling_station))
         )
-    } else if (input$map_radio == "National View"){
-      leaflet(polling_data_filtered(),
-              options = leafletOptions()) %>% 
+    } else if (input$map_radio == "County View"){
+      counties_filtered <- polling_data_filtered() %>%
+                                group_by(county_name,Status) %>%
+                                summarize(Count = n(),
+                                          max_longitude = max(longitude),
+                                          max_latitude = max(latitude),
+                                          min_longitude = min(longitude),
+                                          min_latitude = min(latitude)) %>%
+                                arrange(desc(Count)) %>%
+                                select(county_name, Status, max_longitude, max_latitude, min_longitude, min_latitude)
+      countiesshapefile@data <- countiesshapefile@data %>% left_join(counties_filtered,
+                                                                       by = c("COUNTY_NAM" = "county_name")
+                                           )
+
+      leafletProxy('my_map',data = counties_filtered) %>%
         addProviderTiles("CartoDB.Positron",
                          options = providerTileOptions()) %>%
-        flyToBounds(lng1 = 45.057142,lat1 = -4.336573,lng2 =32.593274, lat2 = 4.29700) %>% 
-        addPolygons(data=countiesshapefile, weight = 2, color = ~pal(Status), 
+        clearShapes() %>%
+        flyToBounds(lng1 = counties_filtered$max_longitude,
+                    lat1 = counties_filtered$min_latitude,
+                    lng2 = counties_filtered$min_longitude,
+                    lat2 = counties_filtered$max_latitude) %>%
+        addPolygons(data=countiesshapefile, weight = 2, 
+                    fillColor = ~pal(Status), color = "black",
                     stroke = TRUE, smoothFactor = 0.5,
                     fillOpacity = 0.5,
                     opacity = 0.1,
                     label = ~htmlEscape(COUNTY_NAM))
-
     }
   })
-
   output$no_of_wards <- renderbs4InfoBox({
     bs4InfoBox(
       title = "Number of wards",
       value = HTML(paste0(format(polling_data_filtered() %>% 
-                     group_by(caw_name) %>% 
-                     summarise(count = n()) %>% 
-                     ungroup() %>% nrow(),
-      format = "f", big.mark = ",", nsmall = 0),br(),
-      tags$p((paste0('Won:',
-                     format(polling_data_filtered() %>% 
-                              filter(Status == "Won") %>% 
-                              group_by(caw_name) %>% 
-                              summarise(count = n()) %>% 
-                              ungroup() %>% nrow(),
-                            format = "f", big.mark = ",", nsmall = 0),
-      "(",
-      percent(
-          (polling_data_filtered() %>% 
-             filter(Status == "Won") %>% 
-             group_by(caw_name) %>% 
-             summarise(count = n()) %>% 
-             ungroup() %>% nrow()) / 
-            (polling_data_filtered() %>% 
-               group_by(caw_name) %>% 
-               summarise(count = n()) %>% 
-               ungroup() %>% nrow())
-          ),
-        ')')), style = "color:green;")
-        )),
+                                   group_by(caw_name) %>% 
+                                   summarise(count = n()) %>% 
+                                   ungroup() %>% nrow(),
+                                 format = "f", big.mark = ",", nsmall = 0),br(),
+                          tags$p((paste0('Won:',
+                                         format(polling_data_filtered() %>% 
+                                                  filter(Status == "Won") %>% 
+                                                  group_by(caw_name) %>% 
+                                                  summarise(count = n()) %>% 
+                                                  ungroup() %>% nrow(),
+                                                format = "f", big.mark = ",", nsmall = 0),
+                                         "(",
+                                         percent(
+                                           (polling_data_filtered() %>% 
+                                              filter(Status == "Won") %>% 
+                                              group_by(caw_name) %>% 
+                                              summarise(count = n()) %>% 
+                                              ungroup() %>% nrow()) / 
+                                             (polling_data_filtered() %>% 
+                                                group_by(caw_name) %>% 
+                                                summarise(count = n()) %>% 
+                                                ungroup() %>% nrow())
+                                         ),
+                                         ')')), style = "color:green;")
+      )),
       icon = "globe"
     )
   })
-
   output$reg_voters <- renderbs4InfoBox({
     bs4InfoBox(
       title = "Registered voters",
       status = "info",
       value = HTML(paste0(format(polling_data_filtered() %>%
-                     group_by(caw_name) %>%
-                     summarise(voters = sum(total_voters)) %>%
-                     ungroup() %>% select(voters) %>% unlist() %>%
-                       as.integer() %>%
-                     sum(na.rm = TRUE),
-        format = "f", big.mark = ",", nsmall = 0),br(),
-        tags$p((paste0('Won:',
-                       format(polling_data_filtered() %>%
-                                filter(Status == 'Won') %>% 
-                                group_by(caw_name) %>%
-                                summarise(voters = sum(total_voters)) %>%
-                                ungroup() %>% select(voters) %>% unlist() %>%
-                                as.integer() %>%
-                                sum(na.rm = TRUE),
-                              format = "f", big.mark = ",", nsmall = 0),
-                       "(",
-                       percent(
-                         (polling_data_filtered() %>%
-                            filter(Status == "Won") %>%
-                            group_by(caw_name) %>%
-                            summarise(voters = sum(total_voters)) %>%
-                            ungroup() %>% select(voters) %>% unlist() %>%
-                            as.integer() %>%
-                            sum(na.rm = TRUE)) /
-                           (polling_data_filtered() %>%
-                              group_by(caw_name) %>%
-                              summarise(voters = sum(total_voters)) %>%
-                              ungroup() %>% select(voters) %>% unlist() %>%
-                              as.integer() %>%
-                              sum(na.rm = TRUE))
-                       ),
-                       ')')), style = "color:black;font-size:80%;")
-
-        )
+                                   group_by(caw_name) %>%
+                                   summarise(voters = sum(total_voters)) %>%
+                                   ungroup() %>% select(voters) %>% unlist() %>%
+                                   as.integer() %>%
+                                   sum(na.rm = TRUE),
+                                 format = "f", big.mark = ",", nsmall = 0),br(),
+                          tags$p((paste0('Won:',
+                                         format(polling_data_filtered() %>%
+                                                  filter(Status == 'Won') %>% 
+                                                  group_by(caw_name) %>%
+                                                  summarise(voters = sum(total_voters)) %>%
+                                                  ungroup() %>% select(voters) %>% unlist() %>%
+                                                  as.integer() %>%
+                                                  sum(na.rm = TRUE),
+                                                format = "f", big.mark = ",", nsmall = 0),
+                                         "(",
+                                         percent(
+                                           (polling_data_filtered() %>%
+                                              filter(Status == "Won") %>%
+                                              group_by(caw_name) %>%
+                                              summarise(voters = sum(total_voters)) %>%
+                                              ungroup() %>% select(voters) %>% unlist() %>%
+                                              as.integer() %>%
+                                              sum(na.rm = TRUE)) /
+                                             (polling_data_filtered() %>%
+                                                group_by(caw_name) %>%
+                                                summarise(voters = sum(total_voters)) %>%
+                                                ungroup() %>% select(voters) %>% unlist() %>%
+                                                as.integer() %>%
+                                                sum(na.rm = TRUE))
+                                         ),
+                                         ')')), style = "color:black;font-size:80%;")
+      )
       ),
       icon = "user-plus"
     )
   })
-
   output$poll_stations <- renderbs4InfoBox({
     bs4InfoBox(
       title = "Polling stations",
       gradientColor = "danger",
       value = HTML(paste0(format(polling_data_filtered() %>%
-                        nrow(),
-        format = "f", big.mark = ",", nsmall = 0),br(),
-        tags$p((paste0('Won:',
-                       format(polling_data_filtered() %>%
-                                filter(Status == "Won") %>%
-                                nrow(),
-                              format = "f", big.mark = ",", nsmall = 0),
-                       "(",
-                       percent(
-                         (polling_data_filtered() %>%
-                            filter(Status == 'Won') %>%
-                            nrow()) /
-                           (polling_data_filtered() %>%
-                              nrow())
-                       ),
-                       ')')), style = "color:black;")
-
-             )
-        ),
+                                   nrow(),
+                                 format = "f", big.mark = ",", nsmall = 0),br(),
+                          tags$p((paste0('Won:',
+                                         format(polling_data_filtered() %>%
+                                                  filter(Status == "Won") %>%
+                                                  nrow(),
+                                                format = "f", big.mark = ",", nsmall = 0),
+                                         "(",
+                                         percent(
+                                           (polling_data_filtered() %>%
+                                              filter(Status == 'Won') %>%
+                                              nrow()) /
+                                             (polling_data_filtered() %>%
+                                                nrow())
+                                         ),
+                                         ')')), style = "color:black;")
+      )
+      ),
       icon = "landmark"
     )
   })
-
   output$survey_responses <- renderUI({
     bs4InfoBox(
       title = "Respondents",
       gradientColor = "primary",
       value = format(nrow(survey_data_filtered()),
-        format = "f", big.mark = ",", nsmall = 0),
+                     format = "f", big.mark = ",", nsmall = 0),
       icon = "pencil-square-o",
       width = NULL
     )
   })
   
-#Survey analysis charts
+  #Survey analysis charts
   output$education_chart_a <- renderPlotly({
     education_chart_data <- survey_data_filtered() %>%
       group_by(`Early Childhood Development Education (ECDE)`) %>%
       summarise(Count = n()) %>%
       mutate(Education = `Early Childhood Development Education (ECDE)`)
-
     plot_ly(x = education_chart_data$Count,
             y = education_chart_data$Education,
             type = 'bar', orientation = 'h', color = I("maroon")) %>% 
       layout(yaxis = list(showgrid = FALSE, showline = FALSE, showticklabels = TRUE),
              xaxis = list(zeroline = FALSE, showline = FALSE, showticklabels = TRUE, showgrid = TRUE)) %>% 
       layout(title = "Education Level")
-      
+    
   })
   
   output$president_chart_a <- renderPlotly({
@@ -471,3 +552,4 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+
