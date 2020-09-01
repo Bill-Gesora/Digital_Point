@@ -25,6 +25,7 @@ library(shinyalert)
 library(dplyr)
 library(shinymanager)
 
+
 options(scipen = 999) # turn-off scientific notation like 1e+48
 options(shiny.maxRequestSize=10000*1024^2)
 options(scipen=999)
@@ -105,6 +106,7 @@ ui <- bs4DashPage(
 )
 server <- function(input, output, session) {
   source("ServerSide.R", local = TRUE)
+  source("Mapping_Data.R", local = TRUE)
   
   auth <- callModule(
     module = auth_server,
@@ -118,6 +120,35 @@ server <- function(input, output, session) {
   
   user_auth <- reactive(auth$user)
   
+  # pollData <- reactivePoll(1000, session,
+  #   checkFunc = function(){
+  #     query <- dbSendQuery(con,
+  #                           "SELECT modify_date
+  #                            FROM sys.tables
+  #                            WHERE [name] = 'Polling_Data'"
+  #                          )
+  #     lastFeedback <- dbFetch(query, -1)
+  #     dbClearResult(query)
+  #     dbDisconnect(con)
+  #     
+  #     lastFeedback$modify_date
+  #   },
+  #   valueFunc = function(){
+  #     mapping_data <- dbSendQuery(con,"SELECT *
+  #                                    FROM polling_data_recent
+  #                                    WHERE [User] = ?")
+  #     dbBind(mapping_data,as.character(list(auth$user)))
+  #     polling_data_map <- dbFetch(mapping_data)
+  #     
+  #     mapping_data_all <- dbSendQuery(con,"SELECT *
+  #                                    FROM polling_data
+  #                                    WHERE [User] = ?")
+  #     dbBind(mapping_data_all,as.character(list(auth$user)))
+  #     polling_data_all_map <- dbFetch(mapping_data_all)
+  #     
+  #     return(list(polling_data_map(), polling_data_all_map()))
+  #   }
+  # )
   #Defining the polling data specifics per the logged in user
   polling_data_map <- reactive({
     mapping_data <- dbSendQuery(con,"SELECT *
@@ -126,7 +157,7 @@ server <- function(input, output, session) {
     dbBind(mapping_data,as.character(list(auth$user)))
     dbFetch(mapping_data)
   })
-  
+
 
   polling_data_all_map <- reactive({
     mapping_data_all <- dbSendQuery(con,"SELECT *
@@ -136,55 +167,6 @@ server <- function(input, output, session) {
     dbFetch(mapping_data_all)
   })
   
-  reactive({
-    countiesshapefile@data <- countiesshapefile@data %>% left_join(polling_data_map() %>% 
-                                                                     group_by(county_name,Status) %>% 
-                                                                     summarize(Count = n(),
-                                                                               max_longitude = max(longitude),
-                                                                               max_latitude = max(latitude),
-                                                                               min_longitude = min(longitude),
-                                                                               min_latitude = min(latitude)) %>% 
-                                                                     arrange(desc(Count)) %>% 
-                                                                     top_n(1) %>% 
-                                                                     select(county_name, Status, max_longitude, max_latitude, min_longitude, min_latitude),
-                                                                   by = c("COUNTY_NAM" = "county_name")
-    )
-    
-    
-  })
-  
-  reactive({
-    constituencyshapefile@data <- constituencyshapefile@data %>% left_join(polling_data_map() %>% 
-                                                                             group_by(constituency,Status) %>% 
-                                                                             summarize(Count = n(),
-                                                                                       max_longitude = max(longitude),
-                                                                                       max_latitude = max(latitude),
-                                                                                       min_longitude = min(longitude),
-                                                                                       min_latitude = min(latitude)) %>% 
-                                                                             arrange(desc(Count)) %>% 
-                                                                             top_n(1) %>% 
-                                                                             select(constituency, Status, max_longitude, max_latitude, min_longitude, min_latitude),
-                                                                           by = c("CONSTITUEN" = "constituency")
-    )
-    
-  })
-  
-  reactive({
-    wardshapefile@data <- wardshapefile@data %>% left_join(polling_data_map() %>% 
-                                                             group_by(caw_name,Status) %>% 
-                                                             summarize(Count = n(),
-                                                                       max_longitude = max(longitude),
-                                                                       max_latitude = max(latitude),
-                                                                       min_longitude = min(longitude),
-                                                                       min_latitude = min(latitude)) %>% 
-                                                             arrange(desc(Count)) %>% 
-                                                             top_n(1) %>% 
-                                                             select(caw_name, Status, max_longitude, max_latitude, min_longitude, min_latitude),
-                                                           by = c("IEBC_WARDS" = "caw_name")
-    )
-    
-  })
-
   observeEvent(input$refresh,{
     progressSweetAlert(
       session = session
@@ -229,137 +211,15 @@ server <- function(input, output, session) {
   
   
   output$my_map <- renderLeaflet ({
-    countiesshapefile@data <- countiesshapefile@data %>% left_join(polling_data_map() %>% 
-                                                                     group_by(county_name,Status) %>% 
-                                                                     summarize(Count = n(),
-                                                                               max_longitude = max(longitude),
-                                                                               max_latitude = max(latitude),
-                                                                               min_longitude = min(longitude),
-                                                                               min_latitude = min(latitude)) %>%
-                                                                     arrange(desc(Count)) %>%
-                                                                     select(county_name, Status, max_longitude, max_latitude, min_longitude, min_latitude),
-                                                                   by = c("COUNTY_NAM" = "county_name")
-    )
-    
-    leaflet(polling_data_map(),
-            options = leafletOptions()) %>% 
-      addProviderTiles("CartoDB.Positron",
-                       options = providerTileOptions()) %>%
-      flyToBounds(lng1 = 45.057142,lat1 = -4.336573,lng2 =32.593274, lat2 = 4.29700) %>% 
-      addPolygons(data=countiesshapefile, weight = 2, color = ~pal(Status), 
-                  stroke = TRUE, smoothFactor = 0.5,
-                  fillOpacity = 0.5,
-                  opacity = 0.1,
-                  label = ~htmlEscape(COUNTY_NAM))
+    leaflet() %>% 
+      addProviderTiles(providers$Stamen.TonerLite) %>% 
+      flyToBounds(lng1 = 33.057142,lat1 = -4.696573,lng2 =42.593274, lat2 = 5.03700)  
   })
   
-  observe({
-    if (input$map_radio == "Ward View") {
-      
-      wards_filtered <- polling_data_filtered() %>%
-                        group_by(caw_name,Status) %>%
-                        summarize(Count = n(),
-                                  max_longitude = max(longitude),
-                                  max_latitude = max(latitude),
-                                  min_longitude = min(longitude),
-                                  min_latitude = min(latitude)) %>%
-                        arrange(desc(Count)) %>%
-                        select(caw_name, Status, max_longitude, max_latitude, min_longitude, min_latitude)
-      wardshapefile@data <- wardshapefile@data %>% left_join(wards_filtered,
-                                                        by = c("IEBC_WARDS" = "caw_name")
-      )
-      
-      leafletProxy('my_map',data = wards_filtered) %>%
-        addProviderTiles("CartoDB.Positron",
-                         options = providerTileOptions()) %>%
-        clearShapes() %>%
-        flyToBounds(lng1 = wards_filtered$max_longitude,
-                    lat1 = wards_filtered$min_latitude,
-                    lng2 = wards_filtered$min_longitude,
-                    lat2 = wards_filtered$max_latitude) %>%
-        addPolygons(data=wardshapefile, weight = 2, 
-                    fillColor = ~pal(Status), color = "black",
-                    stroke = TRUE, smoothFactor = 0.5,
-                    fillOpacity = 0.5,
-                    opacity = 0.1,
-                    label = ~htmlEscape(IEBC_WARDS))
-      
-      
-    } else if (input$map_radio == "Constituency View") {
-      constituency_filtered <- polling_data_filtered() %>%
-        group_by(constituency,Status) %>%
-        summarize(Count = n(),
-                  max_longitude = max(longitude),
-                  max_latitude = max(latitude),
-                  min_longitude = min(longitude),
-                  min_latitude = min(latitude)) %>%
-        arrange(desc(Count)) %>%
-        select(constituency, Status, max_longitude, max_latitude, min_longitude, min_latitude)
-      constituencyshapefile@data <- constituencyshapefile@data %>% left_join(constituency_filtered,
-                                                                     by = c("CONSTITUEN" = "constituency")
-      )
-      
-      leafletProxy('my_map',data = constituency_filtered) %>%
-        addProviderTiles("CartoDB.Positron",
-                         options = providerTileOptions()) %>%
-        clearShapes() %>%
-        flyToBounds(lng1 = constituency_filtered$max_longitude,
-                    lat1 = constituency_filtered$min_latitude,
-                    lng2 = constituency_filtered$min_longitude,
-                    lat2 = constituency_filtered$max_latitude) %>%
-        addPolygons(data=constituencyshapefile, weight = 2, 
-                    fillColor = ~pal(Status), color = "black",
-                    stroke = TRUE, smoothFactor = 0.5,
-                    fillOpacity = 0.5,
-                    opacity = 0.1,
-                    label = ~htmlEscape(CONSTITUEN))
-
-    } else if (input$map_radio == "Poll_Station View") {
-      leafletProxy('my_map',data = polling_data_filtered()) %>% 
-        addProviderTiles("CartoDB.Positron",
-                         options = providerTileOptions()) %>%
-        clearShapes() %>%
-        flyToBounds(lng1 = polling_data_filtered()$max_longitude,
-                    lat1 = polling_data_filtered()$min_latitude,
-                    lng2 = polling_data_filtered()$min_longitude,
-                    lat2 = polling_data_filtered()$max_latitude) %>% 
-        addCircles(
-          weight = 20,
-          fillColor = ~pal(Status), color = "black",
-          stroke = FALSE, fillOpacity = 0.5,
-          lng = ~longitude, lat = ~latitude,
-          label = ~as.character(paste0(polling_station))
-        )
-    } else if (input$map_radio == "County View"){
-      counties_filtered <- polling_data_filtered() %>%
-                                group_by(county_name,Status) %>%
-                                summarize(Count = n(),
-                                          max_longitude = max(longitude),
-                                          max_latitude = max(latitude),
-                                          min_longitude = min(longitude),
-                                          min_latitude = min(latitude)) %>%
-                                arrange(desc(Count)) %>%
-                                select(county_name, Status, max_longitude, max_latitude, min_longitude, min_latitude)
-      countiesshapefile@data <- countiesshapefile@data %>% left_join(counties_filtered,
-                                                                       by = c("COUNTY_NAM" = "county_name")
-                                           )
-
-      leafletProxy('my_map',data = counties_filtered) %>%
-        addProviderTiles("CartoDB.Positron",
-                         options = providerTileOptions()) %>%
-        clearShapes() %>%
-        flyToBounds(lng1 = counties_filtered$max_longitude,
-                    lat1 = counties_filtered$min_latitude,
-                    lng2 = counties_filtered$min_longitude,
-                    lat2 = counties_filtered$max_latitude) %>%
-        addPolygons(data=countiesshapefile, weight = 2, 
-                    fillColor = ~pal(Status), color = "black",
-                    stroke = TRUE, smoothFactor = 0.5,
-                    fillOpacity = 0.5,
-                    opacity = 0.1,
-                    label = ~htmlEscape(COUNTY_NAM))
-    }
-  })
+  map_datasets
+  map_view_selection
+  
+  
   output$no_of_wards <- renderbs4InfoBox({
     bs4InfoBox(
       title = "Number of wards",

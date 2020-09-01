@@ -2,7 +2,7 @@ filtered_updates <- observe({
   if(is.null(input$county_name_id) & is.null(input$const_name_id) &
      is.null(input$caw_name_id)){
     dt <- reactive({
-      polling_data 
+      polling_data
     })
     
     updateSelectizeInput(session, "const_name_id", choices = NULL, selected = NULL)

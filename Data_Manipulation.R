@@ -17,52 +17,19 @@ library("tidytext")
 library("rgdal")
 
 countiesshapefile <- readOGR("Map_Data/counties.shp")
-# countiesshapefile@data <- countiesshapefile@data %>% left_join(polling_data %>% 
-#                                                                  group_by(county_name,Status) %>% 
-#                                                                  summarize(Count = n(),
-#                                                                            max_longitude = max(longitude),
-#                                                                            max_latitude = max(latitude),
-#                                                                            min_longitude = min(longitude),
-#                                                                            min_latitude = min(latitude)) %>% 
-#                                                                  arrange(desc(Count)) %>% 
-#                                                                  top_n(1) %>% 
-#                                                                  select(county_name, Status, max_longitude, max_latitude, min_longitude, min_latitude),
-#                                                                by = c("COUNTY_NAM" = "county_name")
-# )
-
 
 constituencyshapefile <- readOGR("Map_Data/constituencies.shp")
-# constituencyshapefile@data <- constituencyshapefile@data %>% left_join(polling_data %>% 
-#                                                                          group_by(constituency,Status) %>% 
-#                                                                          summarize(Count = n(),
-#                                                                                    max_longitude = max(longitude),
-#                                                                                    max_latitude = max(latitude),
-#                                                                                    min_longitude = min(longitude),
-#                                                                                    min_latitude = min(latitude)) %>% 
-#                                                                          arrange(desc(Count)) %>% 
-#                                                                          top_n(1) %>% 
-#                                                                          select(constituency, Status, max_longitude, max_latitude, min_longitude, min_latitude),
-#                                                                        by = c("CONSTITUEN" = "constituency")
-# )
 
 wardshapefile <- readOGR("Map_Data/Kenya wards.shp")
-# wardshapefile@data <- wardshapefile@data %>% left_join(polling_data %>% 
-#                                                          group_by(caw_name,Status) %>% 
-#                                                          summarize(Count = n(),
-#                                                                    max_longitude = max(longitude),
-#                                                                    max_latitude = max(latitude),
-#                                                                    min_longitude = min(longitude),
-#                                                                    min_latitude = min(latitude)) %>% 
-#                                                          arrange(desc(Count)) %>% 
-#                                                          top_n(1) %>% 
-#                                                          select(caw_name, Status, max_longitude, max_latitude, min_longitude, min_latitude),
-#                                                        by = c("IEBC_WARDS" = "caw_name")
-# )
-# countycode <- countiesshapefile$COUNTY_COD
-# countycode <- as.numeric(countycode)
-# constituencycode <- constituencyshapefile$CONST_CODE #COUNTYCODE THAT'S IN
-# constituencycode <- as.numeric(constituencycode) 
+wardshapefile2 <- readOGR("Map_Data/ward.results.formatted.shp")
 
+#Adding shapelegnth and constituency to wardshapefile
+wardshapefile@data <- wardshapefile@data %>% 
+  left_join(wardshapefile2@data %>% 
+              select(Shape_Area,NAME,CONSTITUEN, Shape_Leng) %>% 
+              mutate(NAME = to_title_case(as.character(NAME))),
+            by = c("IEBC_WARDS" = "NAME")
+            )
 
 
 #Connecting to my twitter account
