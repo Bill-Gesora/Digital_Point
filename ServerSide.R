@@ -2,15 +2,13 @@ filtered_updates <- observe({
   if(is.null(input$county_name_id) & is.null(input$const_name_id) &
      is.null(input$caw_name_id)){
     dt <- reactive({
-      polling_data 
+      polling_data
     })
     
     updateSelectizeInput(session, "const_name_id", choices = NULL, selected = NULL)
     updateSelectizeInput(session, "caw_name_id", choices = NULL, selected = NULL)
-    updateCheckboxGroupInput(session, "ward_group", choices = unique(dt()$caw_name), selected = unique(dt()$caw_name))
-    updateCheckboxGroupInput(session, "constituency_group", choices = unique(dt()$constituency), selected = unique(dt()$constituency))
-    updateCheckboxGroupInput(session, "leaflet_filters", choices = unique(dt()$Status), selected = unique(dt()$Status))
-  
+    updatePickerInput(session, "ward_group", choices = unique(dt()$caw_name), selected = unique(dt()$caw_name))
+    updatePickerInput(session, "constituency_group", choices = unique(dt()$constituency), selected = unique(dt()$constituency))
     } else if (is.not.null(input$county_name_id) & is.null(input$const_name_id) & is.null(input$caw_name_id)) {
     dt <- reactive({
       polling_data %>% 
@@ -19,10 +17,9 @@ filtered_updates <- observe({
     
     updateSelectizeInput(session, "const_name_id", choices = unique(dt()$constituency), selected = NULL)
     updateSelectizeInput(session, "caw_name_id", choices = unique(dt()$caw_name), selected = NULL)
-    updateCheckboxGroupInput(session, "ward_group", choices = unique(dt()$caw_name), selected = unique(dt()$caw_name))
-    updateCheckboxGroupInput(session, "constituency_group", choices = unique(dt()$constituency), selected = unique(dt()$constituency))
-    updateCheckboxGroupInput(session, "leaflet_filters", choices = unique(dt()$Status), selected = unique(dt()$Status))
-    
+    updatePickerInput(session, "ward_group", choices = unique(dt()$caw_name), selected = unique(dt()$caw_name))
+    updatePickerInput(session, "constituency_group", choices = unique(dt()$constituency), selected = unique(dt()$constituency))
+
     } else if (is.not.null(input$county_name_id) & is.not.null(input$const_name_id) & is.null(input$caw_name_id)){
       dt <- reactive({
         polling_data %>% 
@@ -30,19 +27,21 @@ filtered_updates <- observe({
       })
       
       updateSelectizeInput(session, "caw_name_id", choices = unique(dt()$caw_name), selected = NULL)
-      updateCheckboxGroupInput(session, "ward_group", choices = unique(dt()$caw_name), selected = unique(dt()$caw_name))
-      updateCheckboxGroupInput(session, "constituency_group", choices = unique(dt()$constituency), selected = unique(dt()$constituency))
-      updateCheckboxGroupInput(session, "leaflet_filters", choices = unique(dt()$Status), selected = unique(dt()$Status))
-    
+      updatePickerInput(session, "ward_group", choices = unique(dt()$caw_name), selected = unique(dt()$caw_name))
+      updatePickerInput(session, "constituency_group", choices = unique(dt()$constituency), selected = unique(dt()$constituency))
+
       } else if (is.not.null(input$county_name_id) & is.not.null(input$const_name_id) & is.not.null(input$caw_name_id)){
       dt <- reactive({
         polling_data %>% 
           dplyr::filter(caw_name %in% input$caw_name_id)
       })
-      updateCheckboxGroupInput(session, "ward_group", choices = unique(dt()$caw_name), selected = unique(dt()$caw_name))
-      updateCheckboxGroupInput(session, "constituency_group", choices = unique(dt()$constituency), selected = unique(dt()$constituency))
-      updateCheckboxGroupInput(session, "leaflet_filters", choices = unique(dt()$Status), selected = unique(dt()$Status))
+      updatePickerInput(session, "ward_group", choices = unique(dt()$caw_name), selected = unique(dt()$caw_name))
+      updatePickerInput(session, "constituency_group", choices = unique(dt()$constituency), selected = unique(dt()$constituency))
       }
+})
+
+observeEvent(input$clear, {
+  shinyjs::reset("dashboard_filters")
 })
 
 
