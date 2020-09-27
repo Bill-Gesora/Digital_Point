@@ -1,7 +1,7 @@
 #Dashboard overview section----
 polling_data <- dbGetQuery(con,
                            "SELECT *
-                          FROM Geo_Locations")
+                            FROM Geo_Locations")
 # polling_data_all <- dbGetQuery(con,
 #                                "SELECT *
 #                                  FROM Polling_Data")
@@ -20,16 +20,11 @@ countiesshapefile <- readOGR("Map_Data/counties.shp")
 
 constituencyshapefile <- readOGR("Map_Data/constituencies.shp")
 
-wardshapefile <- readOGR("Map_Data/Kenya wards.shp")
-wardshapefile2 <- readOGR("Map_Data/ward.results.formatted.shp")
+wardshapefile <- readOGR("Map_Data/Kenya_wards.shp")
 
 #Adding shapelegnth and constituency to wardshapefile
-wardshapefile@data <- wardshapefile@data %>% 
-  left_join(wardshapefile2@data %>% 
-              select(Shape_Area,NAME,CONSTITUEN, Shape_Leng) %>% 
-              mutate(NAME = to_title_case(as.character(NAME))),
-            by = c("IEBC_WARDS" = "NAME")
-            )
+wardshapefile@data <- wardshapefile@data %>%
+  mutate(IEBC_WARDS=str_to_title(IEBC_WARDS))
 
 
 #Connecting to my twitter account

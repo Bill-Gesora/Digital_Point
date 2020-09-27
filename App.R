@@ -1,4 +1,4 @@
-# library(highcharter)
+#library(highcharter)
 library(shiny)
 library(bs4Dash)
 library(odbc) # For creating a connection to the database
@@ -24,7 +24,8 @@ library(wordcloud)
 library(shinyalert)
 library(dplyr)
 library(shinymanager)
-
+library(rgeos)
+library(shinyjs)
 
 options(scipen = 999) # turn-off scientific notation like 1e+48
 options(shiny.maxRequestSize=10000*1024^2)
@@ -32,6 +33,10 @@ options(scipen=999)
 options(shiny.sanitize.errors = FALSE)
 options(warn=-1) #turning warnings off
 options(shiny.maxRequestSize = 100*1024^2)
+
+#Defining the company_logo
+ramani_logo <- base64enc::dataURI(file="www/Ramani_logo.png", mime="image/png")
+r_only <- base64enc::dataURI(file="www/R_Only.png", mime="image/png")
 
 #Setting options
 lang <- shinymanager:::language$new()
@@ -75,9 +80,9 @@ ui <- bs4DashPage(
     # add image on top ?
     tags_top =
       tags$div(
-        tags$h4("Digital Point", style = "align:center"),
+        #tags$h4("Digital Point", style = "align:center"),
         tags$img(
-          src = "https://t3.ftcdn.net/jpg/03/49/50/42/240_F_349504264_NvpEyjtwOragV7gqAatO6iDj6BPw1tqE.jpg", width = 100
+          src = ramani_logo, width = "100%"
         )
       ),
     # add information on bottom ?
@@ -149,40 +154,47 @@ server <- function(input, output, session) {
   #     return(list(polling_data_map(), polling_data_all_map()))
   #   }
   # )
+  
+  #Data for checking db_update
+  check_db_update <- function(){
+    dbGetQuery(con, 
+               "SELECT [Status],
+                       sum(total_voters)
+               FROM Polling_Data
+               GROUP BY [Status]"
+    )
+  }
+  
   #Defining the polling data specifics per the logged in user
-  polling_data_map <- reactive({
+  get_polling_data_map <- function(){
     mapping_data <- dbSendQuery(con,"SELECT *
                                      FROM polling_data_recent
                                      WHERE [User] = ?")
     dbBind(mapping_data,as.character(list(auth$user)))
     dbFetch(mapping_data)
-  })
+  }
 
 
-  polling_data_all_map <- reactive({
+  get_polling_data_all_map <- function(){
     mapping_data_all <- dbSendQuery(con,"SELECT *
                                      FROM polling_data
                                      WHERE [User] = ?")
     dbBind(mapping_data_all,as.character(list(auth$user)))
     dbFetch(mapping_data_all)
-  })
+  }
   
-  observeEvent(input$refresh,{
-    progressSweetAlert(
-      session = session
-      ,id = "refresh_progress",
-      title = "Refresh in progress...",
-      display_pct = F, value = 100
-    )
- 
-    session$reload()
-    closeSweetAlert(session = session)
-    sendSweetAlert(
-      session = session,
-      title =" Refresh completed !",
-      type = "success"
-    )
-  })
+  #Fetching polling_data
+  polling_data_map <- reactivePoll(intervalMillis = 2000,
+                                   session = session,
+                                   checkFunc = check_db_update,
+                                   valueFunc = get_polling_data_map
+                                  )
+  
+  polling_data_all_map <- reactivePoll(intervalMillis = 100,
+                                   session = session,
+                                   checkFunc = check_db_update,
+                                   valueFunc = get_polling_data_all_map
+                                   )
   
   
     polling_data_filtered <- reactive({
@@ -206,18 +218,15 @@ server <- function(input, output, session) {
   
 
   #Leaflet color pallete
-  pal <- colorFactor(palette = c("red", "grey", "green"),
+  pal <- colorFactor(palette = c("#FF5050", "#FFFF99", "#00CC99"),
                      levels = c("Lost", "Unsure", "Won"))
   
   
   output$my_map <- renderLeaflet ({
     leaflet() %>% 
-      addProviderTiles(providers$Stamen.TonerLite) %>% 
-      flyToBounds(lng1 = 33.057142,lat1 = -4.696573,lng2 =42.593274, lat2 = 5.03700)  
+    addProviderTiles(providers$CartoDB.VoyagerLabelsUnder)
+    
   })
-  
-  map_datasets
-  map_view_selection
   
   
   output$no_of_wards <- renderbs4InfoBox({
@@ -288,7 +297,7 @@ server <- function(input, output, session) {
                                                 as.integer() %>%
                                                 sum(na.rm = TRUE))
                                          ),
-                                         ')')), style = "color:black;font-size:80%;")
+                                         ')')), style = "color:black;")
       )
       ),
       icon = "user-plus"
